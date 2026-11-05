@@ -107,6 +107,7 @@
             justify-content: center;
             height: 100%;
             overflow-y: auto;
+            position: relative;
         }
 
         .auth-card {
@@ -134,6 +135,7 @@
             display: flex;
             flex-direction: column;
             height: 100%;
+            position: relative;
         }
 
         header {
@@ -154,6 +156,7 @@
             display: flex;
             flex-direction: column;
             gap: 16px;
+            padding-bottom: 40px; /* Spazio per la firma in basso */
         }
 
         .pass-option-card {
@@ -179,6 +182,18 @@
             color: #00E5FF;
             letter-spacing: 0.5px;
             word-break: break-all;
+        }
+
+        /* Stile Firma Creatore in basso a destra */
+        .creator-watermark {
+            position: absolute;
+            bottom: 12px;
+            right: 18px;
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.5);
+            letter-spacing: 0.5px;
+            pointer-events: none;
+            z-index: 20;
         }
 
         .modal-overlay {
@@ -278,6 +293,7 @@
                     <span id="auth-toggle-btn" onclick="toggleAuthMode()" style="color: #00E5FF; font-weight: bold; text-decoration: underline; cursor: pointer;">Registrati</span>
                 </div>
             </div>
+            <div class="creator-watermark">Creato da: Lorenzo</div>
         </div>
 
         <!-- SCHERMATA PASSWORD DIMENTICATA -->
@@ -301,6 +317,7 @@
                 <button class="btn-primary" onclick="handleResetPassword()" style="background: #00E5FF; color: #000; margin-bottom: 12px;">Aggiorna Password</button>
                 <button class="btn-primary" onclick="showAuthScreen()" style="background: transparent; color: #fff; border: 1px solid rgba(255,255,255,0.4); box-shadow: none;">Torna al Login</button>
             </div>
+            <div class="creator-watermark">Creato da: Lorenzo</div>
         </div>
 
         <!-- SCHERMATA GENERATORE PASSWORD -->
@@ -358,6 +375,7 @@
                     <div id="options-container"></div>
                 </div>
             </div>
+            <div class="creator-watermark">Creato da: Lorenzo</div>
         </div>
 
         <!-- MODALE DI CARICAMENTO -->
@@ -391,7 +409,6 @@
         function setupEnterKeyListeners() {
             const emailInput = document.getElementById('auth-email');
             const passwordInput = document.getElementById('auth-password');
-            const forgotEmailInput = document.getElementById('forgot-email');
             const forgotPassInput = document.getElementById('forgot-new-password');
 
             const triggerAuthOnEnter = function(event) {
@@ -447,7 +464,6 @@
             document.getElementById('auth-toggle-text').innerText = isLoginMode ? 'Non hai un account? ' : 'Hai già un account? ';
             document.getElementById('auth-toggle-btn').innerText = isLoginMode ? 'Registrati' : 'Accedi';
             
-            // Pulsante Password Dimenticata visibile solo in Login
             const forgotBtn = document.getElementById('forgot-pass-btn');
             if (isLoginMode) {
                 forgotBtn.classList.remove('hidden');
