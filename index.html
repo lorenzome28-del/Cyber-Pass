@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="it">
-<head> 
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CyberPass - Password Generator</title>
@@ -100,7 +100,7 @@
         .justify-center { justify-content: center; }
         .cursor-pointer { cursor: pointer; }
 
-        #auth-screen {
+        #auth-screen, #forgot-screen {
             padding: 24px;
             display: flex;
             flex-direction: column;
@@ -268,6 +268,7 @@
                         <input type="checkbox" id="remember-me" checked style="accent-color: #00E5FF; width: 18px; height: 18px;">
                         <span style="font-size: 13px;">Rimani connesso</span>
                     </div>
+                    <span id="forgot-pass-btn" onclick="showForgotPasswordScreen()" style="font-size: 12px; color: #00E5FF; cursor: pointer; text-decoration: underline;">Password dimenticata?</span>
                 </div>
 
                 <button class="btn-primary" id="auth-submit-btn" onclick="handleAuth()">Accedi</button>
@@ -276,6 +277,29 @@
                     <span id="auth-toggle-text" style="color: rgba(255,255,255,0.7);">Non hai un account? </span>
                     <span id="auth-toggle-btn" onclick="toggleAuthMode()" style="color: #00E5FF; font-weight: bold; text-decoration: underline; cursor: pointer;">Registrati</span>
                 </div>
+            </div>
+        </div>
+
+        <!-- SCHERMATA PASSWORD DIMENTICATA -->
+        <div id="forgot-screen" class="hidden">
+            <div class="glass-container auth-card">
+                <h1 style="text-align: center; font-size: 32px; font-weight: 900; letter-spacing: 2px; margin-bottom: 25px;">CyberPass</h1>
+                <h2 style="font-size: 24px; font-weight: bold; margin-bottom: 6px;">Recupera Password</h2>
+                <p style="font-size: 13px; color: rgba(255,255,255,0.7); margin-bottom: 20px;">Inserisci la tua email e imposta una nuova password.</p>
+
+                <div style="display: flex; flex-direction: column; gap: 14px; margin-bottom: 20px;">
+                    <div style="position: relative;">
+                        <span class="material-icons-outlined" style="position: absolute; left: 16px; top: 16px; color: #00E5FF;">email</span>
+                        <input type="email" id="forgot-email" class="glass-input" placeholder="La tua Email" style="padding-left: 50px !important;">
+                    </div>
+                    <div style="position: relative;">
+                        <span class="material-icons-outlined" style="position: absolute; left: 16px; top: 16px; color: #00E5FF;">lock_reset</span>
+                        <input type="password" id="forgot-new-password" class="glass-input" placeholder="Nuova Password (almeno 4 caratteri)" style="padding-left: 50px !important;">
+                    </div>
+                </div>
+
+                <button class="btn-primary" onclick="handleResetPassword()" style="background: #00E5FF; color: #000; margin-bottom: 12px;">Aggiorna Password</button>
+                <button class="btn-primary" onclick="showAuthScreen()" style="background: transparent; color: #fff; border: 1px solid rgba(255,255,255,0.4); box-shadow: none;">Torna al Login</button>
             </div>
         </div>
 
@@ -360,11 +384,15 @@
         function clearAuthInputs() {
             document.getElementById('auth-email').value = '';
             document.getElementById('auth-password').value = '';
+            document.getElementById('forgot-email').value = '';
+            document.getElementById('forgot-new-password').value = '';
         }
 
         function setupEnterKeyListeners() {
             const emailInput = document.getElementById('auth-email');
             const passwordInput = document.getElementById('auth-password');
+            const forgotEmailInput = document.getElementById('forgot-email');
+            const forgotPassInput = document.getElementById('forgot-new-password');
 
             const triggerAuthOnEnter = function(event) {
                 if (event.key === 'Enter') {
@@ -375,6 +403,13 @@
 
             emailInput.addEventListener('keydown', triggerAuthOnEnter);
             passwordInput.addEventListener('keydown', triggerAuthOnEnter);
+
+            forgotPassInput.addEventListener('keydown', function(event) {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    handleResetPassword();
+                }
+            });
         }
 
         function showSnackBar(msg) {
@@ -411,6 +446,49 @@
             document.getElementById('auth-submit-btn').innerText = isLoginMode ? 'Accedi' : 'Registrati';
             document.getElementById('auth-toggle-text').innerText = isLoginMode ? 'Non hai un account? ' : 'Hai già un account? ';
             document.getElementById('auth-toggle-btn').innerText = isLoginMode ? 'Registrati' : 'Accedi';
+            
+            // Pulsante Password Dimenticata visibile solo in Login
+            const forgotBtn = document.getElementById('forgot-pass-btn');
+            if (isLoginMode) {
+                forgotBtn.classList.remove('hidden');
+            } else {
+                forgotBtn.classList.add('hidden');
+            }
+        }
+
+        function showForgotPasswordScreen() {
+            clearAuthInputs();
+            document.getElementById('auth-screen').classList.add('hidden');
+            document.getElementById('forgot-screen').classList.remove('hidden');
+        }
+
+        function showAuthScreen() {
+            clearAuthInputs();
+            document.getElementById('forgot-screen').classList.add('hidden');
+            document.getElementById('auth-screen').classList.remove('hidden');
+        }
+
+        function handleResetPassword() {
+            const email = document.getElementById('forgot-email').value.trim();
+            const newPassword = document.getElementById('forgot-new-password').value.trim();
+
+            if (!email || !email.includes('@')) {
+                showSnackBar('Inserisci un indirizzo email valido!');
+                return;
+            }
+            if (!usersDB[email]) {
+                showSnackBar('Nessun account trovato per questa email.');
+                return;
+            }
+            if (newPassword.length < 4) {
+                showSnackBar('La nuova password deve contenere almeno 4 caratteri!');
+                return;
+            }
+
+            usersDB[email] = newPassword;
+            saveUsersDB();
+            showSnackBar('Password aggiornata con successo! Ora puoi accedere.');
+            showAuthScreen();
         }
 
         function handleAuth() {
@@ -496,6 +574,7 @@
 
         function showGeneratorScreen() {
             document.getElementById('auth-screen').classList.add('hidden');
+            document.getElementById('forgot-screen').classList.add('hidden');
             document.getElementById('generator-screen').classList.remove('hidden');
             document.getElementById('main-bg').className = 'app-background app-bg-alt';
         }
@@ -525,7 +604,6 @@
             let wordLower = wordInput.toLowerCase();
             let wordUpper = wordInput.toUpperCase();
 
-            // Creazione di 6 opzioni differenti
             let options = [
                 wordCap + numberInput + specialChar,
                 specialChar + wordCap + numberInput,
